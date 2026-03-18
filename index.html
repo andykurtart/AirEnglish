@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Travel Guide">
+<meta name="description" content="Английские фразы и гайды для путешественников. Работает офлайн.">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Travel Guide</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f5f7;--bg-card:#fff;--bg-nav:rgba(245,245,247,0.88);
+  --text-primary:#1d1d1f;--text-secondary:#6e6e73;--text-tertiary:#aeaeb2;
+  --border:rgba(0,0,0,0.08);--shadow:0 2px 16px rgba(0,0,0,0.07);
+  --accent:#0071e3;--accent-light:rgba(0,113,227,0.1);
+  --pill-bg:rgba(0,0,0,0.06);--pill-active:#0071e3;
+  --divider:rgba(0,0,0,0.06);--star-off:#d1d1d6;--star-on:#ff9f0a;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+  --radius:16px;--radius-sm:10px;--nav-height:56px;
+}
+[data-theme="dark"]{
+  --bg:#000;--bg-card:#1c1c1e;--bg-nav:rgba(28,28,30,0.92);
+  --text-primary:#f5f5f7;--text-secondary:#98989d;--text-tertiary:#48484a;
+  --border:rgba(255,255,255,0.08);--shadow:0 2px 16px rgba(0,0,0,0.4);
+  --accent:#2997ff;--accent-light:rgba(41,151,255,0.12);
+  --pill-bg:rgba(255,255,255,0.08);--divider:rgba(255,255,255,0.07);
+  --star-off:#3a3a3c;
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text-primary);
+  min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+  transition:background .3s,color .3s}
+::-webkit-scrollbar{width:0}
+
+/* ── Topbar ── */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;
+  height:calc(var(--nav-height) + var(--safe-top));padding-top:var(--safe-top);
+  background:var(--bg-nav);backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding-left:20px;padding-right:16px}
+.topbar-logo{display:flex;align-items:center;gap:8px}
+.logo-icon{width:28px;height:28px;background:var(--accent);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.topbar-title{font-size:17px;font-weight:600;letter-spacing:-.3px;color:var(--text-primary)}
+.theme-btn{width:36px;height:36px;border-radius:50%;border:none;background:var(--pill-bg);
+  color:var(--text-primary);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:16px;transition:background .2s,transform .15s;flex-shrink:0}
+.theme-btn:active{transform:scale(.9)}
+
+/* ── Layout ── */
+.main{padding-top:calc(var(--nav-height) + var(--safe-top));
+  padding-bottom:calc(58px + var(--safe-bottom) + 12px);min-height:100dvh}
+.page{display:none;animation:pagein .28s ease}
+.page.active{display:block}
+@keyframes pagein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Bottom Nav ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--bg-nav);backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-top:1px solid var(--border);padding-bottom:var(--safe-bottom);display:flex}
+.nav-btn{flex:1;border:none;background:none;cursor:pointer;padding:8px 4px 10px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--text-tertiary);transition:color .2s;-webkit-tap-highlight-color:transparent}
+.nav-btn.active{color:var(--accent)}
+.nav-icon{font-size:22px;line-height:1;transition:transform .2s}
+.nav-btn:active .nav-icon{transform:scale(.85)}
+.nav-label{font-size:10px;font-weight:500;letter-spacing:.2px}
+
+/* ── Section header ── */
+.section-header{padding:28px 20px 8px}
+.section-title{font-size:28px;font-weight:700;letter-spacing:-.5px;line-height:1.2;color:var(--text-primary)}
+.section-sub{font-size:15px;color:var(--text-secondary);margin-top:4px}
+
+/* ── Search ── */
+.search-wrap{padding:8px 20px 10px}
+.search-box{display:flex;align-items:center;background:var(--pill-bg);
+  border-radius:var(--radius-sm);padding:0 12px;gap:8px}
+.search-icon{font-size:15px;color:var(--text-tertiary);flex-shrink:0}
+.search-input{flex:1;border:none;background:none;padding:10px 0;
+  font-family:var(--font);font-size:16px;color:var(--text-primary);outline:none}
+.search-input::placeholder{color:var(--text-tertiary)}
+.search-clear{border:none;background:none;cursor:pointer;color:var(--text-tertiary);
+  font-size:16px;padding:4px;display:none}
+
+/* ── Category pills — WRAP instead of scroll ── */
+.cat-pills-wrap{
+  display:flex;
+  flex-wrap:wrap;       /* ← ключевое изменение */
+  gap:8px;
+  padding:0 20px 14px;
+}
+.cat-pill{border:none;background:var(--pill-bg);color:var(--text-secondary);
+  border-radius:20px;padding:6px 14px;font-family:var(--font);font-size:14px;
+  font-weight:500;cursor:pointer;white-space:nowrap;
+  transition:background .2s,color .2s,transform .15s;-webkit-tap-highlight-color:transparent}
+.cat-pill.active{background:var(--pill-active);color:#fff}
+.cat-pill:active{transform:scale(.95)}
+
+/* ── Phrases ── */
+.phrases-wrap{padding:0 20px}
+.phrase-group-title{font-size:12px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--text-tertiary);padding:16px 0 8px}
+.phrase-card{background:var(--bg-card);border-radius:var(--radius-sm);
+  padding:13px 48px 13px 16px;margin-bottom:8px;border:1px solid var(--border);
+  cursor:pointer;transition:transform .15s,background .15s;
+  -webkit-tap-highlight-color:transparent;position:relative}
+.phrase-card:active{transform:scale(.99);background:var(--pill-bg)}
+.phrase-en{font-size:15px;font-weight:500;color:var(--text-primary);
+  letter-spacing:-.1px;line-height:1.4}
+.phrase-ru{font-size:13px;color:var(--text-secondary);margin-top:3px;line-height:1.4}
+
+/* ── Star button ── */
+.star-btn{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  border:none;background:none;cursor:pointer;padding:8px;
+  -webkit-tap-highlight-color:transparent;
+  font-size:20px;line-height:1;
+  color:var(--star-off);
+  transition:color .2s,transform .15s;
+}
+.star-btn.active{color:var(--star-on)}
+.star-btn:active{transform:translateY(-50%) scale(1.35)}
+
+/* ── Toast ── */
+.copy-toast{position:fixed;bottom:calc(68px + var(--safe-bottom));left:50%;
+  transform:translateX(-50%) translateY(16px);background:var(--text-primary);
+  color:var(--bg);font-size:13px;font-weight:500;padding:8px 18px;border-radius:20px;
+  opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;white-space:nowrap}
+.copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Back btn ── */
+.back-header{display:flex;align-items:center;padding:12px 20px 4px}
+.back-btn{display:flex;align-items:center;gap:2px;border:none;background:none;
+  color:var(--accent);font-family:var(--font);font-size:16px;cursor:pointer;
+  padding:4px 0;-webkit-tap-highlight-color:transparent}
+
+/* ── Guides list ── */
+.guides-grid{padding:0 20px 16px;display:flex;flex-direction:column;gap:10px}
+.guide-card{background:var(--bg-card);border-radius:var(--radius);padding:18px 16px;
+  cursor:pointer;border:1px solid var(--border);box-shadow:var(--shadow);
+  transition:transform .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent;
+  display:flex;align-items:center;gap:14px}
+.guide-card:active{transform:scale(.98);box-shadow:none}
+.guide-card-icon{width:50px;height:50px;border-radius:14px;display:flex;
+  align-items:center;justify-content:center;font-size:23px;flex-shrink:0}
+.guide-card-body{flex:1;min-width:0}
+.guide-card-title{font-size:15px;font-weight:600;letter-spacing:-.2px;color:var(--text-primary)}
+.guide-card-sub{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.guide-card-count{font-size:11px;color:var(--text-tertiary);margin-top:3px}
+.guide-chevron{color:var(--text-tertiary);font-size:20px;flex-shrink:0}
+
+/* ── Guide detail ── */
+.guide-hero{padding:16px 20px 20px}
+.guide-hero-icon{width:60px;height:60px;border-radius:17px;display:flex;
+  align-items:center;justify-content:center;font-size:28px;margin-bottom:12px}
+.guide-hero-title{font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--text-primary)}
+.guide-hero-sub{font-size:15px;color:var(--text-secondary);margin-top:4px}
+.tag{display:inline-block;font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.5px;padding:3px 8px;border-radius:6px;margin-bottom:10px}
+.steps-list{padding:4px 20px 24px;display:flex;flex-direction:column}
+.step-item{display:flex;gap:14px;padding:0 0 24px;position:relative}
+.step-item:last-child{padding-bottom:4px}
+.step-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:32px}
+.step-num{width:32px;height:32px;border-radius:50%;color:#fff;font-size:14px;
+  font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-line{width:2px;flex:1;background:var(--divider);margin-top:6px;min-height:16px}
+.step-item:last-child .step-line{display:none}
+.step-body{flex:1;padding-top:4px}
+.step-title{font-size:16px;font-weight:600;letter-spacing:-.2px;color:var(--text-primary);margin-bottom:5px}
+.step-content{font-size:14px;color:var(--text-secondary);line-height:1.65}
+.step-tip{margin-top:10px;background:var(--accent-light);border-radius:var(--radius-sm);
+  padding:10px 12px;display:flex;align-items:flex-start;gap:7px}
+.step-tip-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.step-tip-text{font-size:13px;color:var(--accent);font-style:italic;line-height:1.5}
+
+/* ── Empty ── */
+.empty-state{text-align:center;padding:60px 40px}
+.empty-icon{font-size:50px;margin-bottom:14px}
+.empty-title{font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:8px}
+.empty-text{font-size:15px;color:var(--text-secondary);line-height:1.5}
+
+/* ── Misc ── */
+.divider{height:1px;background:var(--divider);margin:0 20px}
+mark{background:rgba(255,204,0,.32);color:inherit;border-radius:2px;padding:0 1px}
+
+/* ── Offline ── */
+.offline-banner{display:none;background:#ff9500;color:#fff;text-align:center;
+  font-size:13px;font-weight:500;padding:8px 20px;position:fixed;
+  top:calc(var(--nav-height) + var(--safe-top));left:0;right:0;z-index:99}
+body.is-offline .offline-banner{display:block}
+body.is-offline .main{padding-top:calc(var(--nav-height) + var(--safe-top) + 36px)}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="offline-banner">✈️ Офлайн-режим — все данные доступны</div>
+
+<header class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-icon">✈️</div>
+    <span class="topbar-title" id="topbar-title">Travel Guide</span>
+  </div>
+  <button class="theme-btn" id="theme-btn" aria-label="Тема">🌙</button>
+</header>
+
+<div class="copy-toast" id="copy-toast">Скопировано ✓</div>
+
+<main class="main">
+
+  <!-- PHRASES -->
+  <div class="page active" id="page-phrases">
+    <div class="section-header">
+      <h1 class="section-title">Фразы</h1>
+      <p class="section-sub">English phrases for travellers</p>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="phrase-search" type="search" placeholder="Поиск фраз..." autocomplete="off" autocorrect="off" spellcheck="false">
+        <button class="search-clear" id="search-clear">✕</button>
+      </div>
+    </div>
+    <div class="cat-pills-wrap" id="cat-pills">
+      <button class="cat-pill active" data-cat="all">Все</button>
+    </div>
+    <div class="phrases-wrap" id="phrases-list"></div>
+  </div>
+
+  <!-- GUIDES -->
+  <div class="page" id="page-guides">
+    <div class="section-header">
+      <h1 class="section-title">Гайды</h1>
+      <p class="section-sub">Как вести себя в каждой ситуации</p>
+    </div>
+    <div class="guides-grid" id="guides-list"></div>
+  </div>
+
+  <!-- GUIDE DETAIL -->
+  <div class="page" id="page-guide-detail">
+    <div class="back-header">
+      <button class="back-btn" id="guide-back-btn">‹ Гайды</button>
+    </div>
+    <div id="guide-detail-content"></div>
+  </div>
+
+  <!-- FAVORITES -->
+  <div class="page" id="page-favorites">
+    <div class="section-header">
+      <h1 class="section-title">Избранное</h1>
+      <p class="section-sub">Ваши сохранённые фразы</p>
+    </div>
+    <div class="phrases-wrap" id="favorites-list"></div>
+  </div>
+
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-page="page-phrases">
+    <span class="nav-icon">💬</span>
+    <span class="nav-label">Фразы</span>
+  </button>
+  <button class="nav-btn" data-page="page-guides">
+    <span class="nav-icon">📖</span>
+    <span class="nav-label">Гайды</span>
+  </button>
+  <button class="nav-btn" data-page="page-favorites">
+    <span class="nav-icon">⭐</span>
+    <span class="nav-label">Избранное</span>
+  </button>
+</nav>
+
+<script>
+/* ════════════════════════════════════════════════
+   DATA — PHRASES
+════════════════════════════════════════════════ */
+const PHRASES_DATA = { categories: [
+  {
+    id:"airport", icon:"✈️", title:"Аэропорт", subtitle:"Airport", color:"#0071e3",
+    phrases:[
+      {en:"Where is the check-in counter?", ru:"Где стойка регистрации?"},
+      {en:"I'd like a window seat, please.", ru:"Мне бы хотелось место у окна, пожалуйста."},
+      {en:"I'd like an aisle seat, please.", ru:"Мне бы хотелось место у прохода, пожалуйста."},
+      {en:"I'd like an exit row seat.", ru:"Мне бы хотелось место у аварийного выхода."},
+      {en:"How many bags can I check in?", ru:"Сколько сумок я могу сдать в багаж?"},
+      {en:"My luggage is overweight.", ru:"Мой багаж перевешивает."},
+      {en:"Can I pay for extra baggage here?", ru:"Могу я доплатить за лишний багаж здесь?"},
+      {en:"Where is gate number...?", ru:"Где выход номер...?"},
+      {en:"Has the gate changed?", ru:"Выход изменился?"},
+      {en:"When does boarding start?", ru:"Когда начинается посадка?"},
+      {en:"Is the flight on time?", ru:"Рейс по расписанию?"},
+      {en:"The flight is delayed.", ru:"Рейс задерживается."},
+      {en:"My flight has been cancelled.", ru:"Мой рейс отменили."},
+      {en:"I need to rebook my flight.", ru:"Мне нужно перебронировать рейс."},
+      {en:"Where is the baggage claim?", ru:"Где получение багажа?"},
+      {en:"My luggage is lost.", ru:"Мой багаж потерян."},
+      {en:"My bag is damaged.", ru:"Мой чемодан повреждён."},
+      {en:"I need to fill out a lost baggage report.", ru:"Мне нужно заполнить акт об утере багажа."},
+      {en:"I need to fill out a customs form.", ru:"Мне нужно заполнить таможенную декларацию."},
+      {en:"Do you have anything to declare?", ru:"Вам есть что декларировать?"},
+      {en:"I have nothing to declare.", ru:"Мне нечего декларировать."},
+      {en:"Where is passport control?", ru:"Где паспортный контроль?"},
+      {en:"What is the purpose of your visit?", ru:"Цель вашего визита?"},
+      {en:"I'm here on vacation.", ru:"Я здесь в отпуске."},
+      {en:"I'm here on business.", ru:"Я здесь по делам."},
+      {en:"I'm in transit.", ru:"Я в транзите."},
+      {en:"How long will you be staying?", ru:"Как долго вы пробудете?"},
+      {en:"I'll be staying for a week.", ru:"Я пробуду неделю."},
+      {en:"Where are you staying?", ru:"Где вы остановитесь?"},
+      {en:"I'm staying at the Hilton Hotel.", ru:"Я остановлюсь в отеле Хилтон."},
+      {en:"Where is the currency exchange?", ru:"Где обмен валюты?"},
+      {en:"Where is the ATM?", ru:"Где банкомат?"},
+      {en:"Where is the information desk?", ru:"Где информационная стойка?"},
+      {en:"Is there free Wi-Fi here?", ru:"Здесь есть бесплатный Wi-Fi?"},
+      {en:"Where are the toilets?", ru:"Где туалеты?"},
+      {en:"Where can I find a taxi?", ru:"Где я могу найти такси?"},
+      {en:"Where is the airport bus?", ru:"Где аэропортовый автобус?"},
+      {en:"Is there a left luggage office?", ru:"Есть ли здесь камера хранения?"},
+      {en:"Where is the smoking area?", ru:"Где зона для курения?"},
+      {en:"Where is the lounge?", ru:"Где зал ожидания бизнес-класса?"},
+    ]
+  },
+  {
+    id:"flight", icon:"🛫", title:"На борту", subtitle:"On the Plane", color:"#5856d6",
+    phrases:[
+      {en:"Excuse me, that's my seat.", ru:"Простите, это моё место."},
+      {en:"Can you help me with my carry-on?", ru:"Не могли бы вы помочь мне с ручной кладью?"},
+      {en:"Could I move to a different seat?", ru:"Могу ли я пересесть на другое место?"},
+      {en:"Please fasten your seatbelt.", ru:"Пожалуйста, пристегните ремень безопасности."},
+      {en:"Could I have a blanket, please?", ru:"Можно мне плед, пожалуйста?"},
+      {en:"Could I have a pillow, please?", ru:"Можно мне подушку, пожалуйста?"},
+      {en:"I'm feeling airsick.", ru:"Меня укачивает в самолёте."},
+      {en:"Could I have a sick bag?", ru:"Можно мне пакет для тошноты?"},
+      {en:"Could I have some water, please?", ru:"Можно мне воды, пожалуйста?"},
+      {en:"What would you like to drink?", ru:"Что вы хотите выпить?"},
+      {en:"I'll have orange juice, please.", ru:"Мне, пожалуйста, апельсиновый сок."},
+      {en:"What are the meal options?", ru:"Какие варианты питания?"},
+      {en:"I have a special meal request.", ru:"У меня заказано специальное питание."},
+      {en:"I'm vegetarian.", ru:"Я вегетарианец/вегетарианка."},
+      {en:"I'm vegan.", ru:"Я веган/веганка."},
+      {en:"I'm allergic to nuts.", ru:"У меня аллергия на орехи."},
+      {en:"I'm allergic to gluten.", ru:"У меня аллергия на глютен."},
+      {en:"I'm allergic to dairy.", ru:"У меня аллергия на молочные продукты."},
+      {en:"Could you recline your seat?", ru:"Не могли бы вы поднять спинку сиденья?"},
+      {en:"Could you lower the window shade?", ru:"Не могли бы вы опустить шторку иллюминатора?"},
+      {en:"How much longer until we land?", ru:"Сколько ещё до посадки?"},
+      {en:"When do we arrive?", ru:"Когда мы прибываем?"},
+      {en:"What is the local time at destination?", ru:"Какое местное время в пункте назначения?"},
+      {en:"The seatbelt sign is on.", ru:"Знак пристегнуть ремни включён."},
+      {en:"We are experiencing turbulence.", ru:"Мы испытываем турбулентность."},
+      {en:"Please remain seated.", ru:"Пожалуйста, оставайтесь на своих местах."},
+      {en:"We are beginning our descent.", ru:"Мы начинаем снижение."},
+      {en:"We will be landing shortly.", ru:"Мы скоро совершим посадку."},
+      {en:"Is there a charging port nearby?", ru:"Есть ли поблизости порт для зарядки?"},
+      {en:"Do you have headphones?", ru:"У вас есть наушники?"},
+      {en:"Excuse me, I need to get past.", ru:"Простите, мне нужно пройти."},
+      {en:"Could I get a cup of tea?", ru:"Можно мне чашку чая?"},
+      {en:"Could I get a cup of coffee?", ru:"Можно мне кофе?"},
+      {en:"Is there entertainment on this flight?", ru:"Есть ли развлечения на этом рейсе?"},
+      {en:"How do I connect to the in-flight Wi-Fi?", ru:"Как подключиться к Wi-Fi на борту?"},
+    ]
+  },
+  {
+    id:"transfer", icon:"🚌", title:"Трансфер", subtitle:"Transfer & Transport", color:"#ff9500",
+    phrases:[
+      {en:"Where is the shuttle bus stop?", ru:"Где остановка шаттла?"},
+      {en:"How do I get to the city centre?", ru:"Как добраться до центра города?"},
+      {en:"Is there a direct bus to the hotel?", ru:"Есть ли прямой автобус до отеля?"},
+      {en:"How long does it take?", ru:"Сколько времени это займёт?"},
+      {en:"Take me to this address, please.", ru:"Отвезите меня по этому адресу, пожалуйста."},
+      {en:"Please take me to the hotel.", ru:"Пожалуйста, отвезите меня в отель."},
+      {en:"How much does it cost?", ru:"Сколько это стоит?"},
+      {en:"Is the price fixed?", ru:"Цена фиксированная?"},
+      {en:"Is it far from here?", ru:"Это далеко отсюда?"},
+      {en:"Can you drive faster, please?", ru:"Не могли бы вы ехать быстрее, пожалуйста?"},
+      {en:"Please stop here.", ru:"Пожалуйста, остановитесь здесь."},
+      {en:"Please wait for me.", ru:"Пожалуйста, подождите меня."},
+      {en:"Keep the change.", ru:"Сдачи не нужно."},
+      {en:"Can I get a receipt?", ru:"Можно получить квитанцию?"},
+      {en:"Where is the nearest metro station?", ru:"Где ближайшая станция метро?"},
+      {en:"Which line goes to the city centre?", ru:"Какая линия идёт в центр города?"},
+      {en:"Which train goes to the airport?", ru:"Какой поезд идёт в аэропорт?"},
+      {en:"Can I buy a ticket here?", ru:"Могу я купить билет здесь?"},
+      {en:"How many stops until...?", ru:"Сколько остановок до...?"},
+      {en:"Where should I get off?", ru:"Где мне выходить?"},
+      {en:"Is this the right stop?", ru:"Это нужная остановка?"},
+      {en:"Does this bus go to...?", ru:"Этот автобус идёт до...?"},
+      {en:"Could you call me a taxi?", ru:"Не могли бы вы вызвать мне такси?"},
+      {en:"I have a reservation with the transfer service.", ru:"У меня есть бронь трансфера."},
+      {en:"Can you put my bags in the trunk?", ru:"Не могли бы вы положить мои сумки в багажник?"},
+      {en:"I'd like to rent a car.", ru:"Я хотел бы арендовать машину."},
+      {en:"Where is the car rental desk?", ru:"Где стойка проката автомобилей?"},
+      {en:"What time is the last train?", ru:"В котором часу последний поезд?"},
+      {en:"Do you have a timetable?", ru:"У вас есть расписание?"},
+    ]
+  },
+  {
+    id:"hotel", icon:"🏨", title:"Отель", subtitle:"Hotel", color:"#34c759",
+    phrases:[
+      {en:"I have a reservation.", ru:"У меня есть бронь."},
+      {en:"My name is...", ru:"Меня зовут..."},
+      {en:"I'd like to check in.", ru:"Я хочу зарегистрироваться."},
+      {en:"I'd like to check out.", ru:"Я хочу выехать."},
+      {en:"What time is check-in?", ru:"Во сколько заезд?"},
+      {en:"What time is check-out?", ru:"Во сколько выезд?"},
+      {en:"Can I have an early check-in?", ru:"Могу ли я заехать пораньше?"},
+      {en:"Can I have a late check-out?", ru:"Могу ли я выехать позже?"},
+      {en:"Could I have a room with a view?", ru:"Не могли бы вы дать мне номер с видом?"},
+      {en:"Could I have a quieter room?", ru:"Не могли бы вы дать мне более тихий номер?"},
+      {en:"Could I have a higher floor?", ru:"Можно номер на более высоком этаже?"},
+      {en:"The room is too noisy.", ru:"В номере слишком шумно."},
+      {en:"The air conditioning is not working.", ru:"Кондиционер не работает."},
+      {en:"The heating is not working.", ru:"Отопление не работает."},
+      {en:"The Wi-Fi is not working.", ru:"Wi-Fi не работает."},
+      {en:"The shower is not working.", ru:"Душ не работает."},
+      {en:"There is no hot water.", ru:"Нет горячей воды."},
+      {en:"Could you bring extra towels?", ru:"Не могли бы вы принести дополнительные полотенца?"},
+      {en:"Could you bring extra pillows?", ru:"Не могли бы вы принести дополнительные подушки?"},
+      {en:"I'd like a wake-up call at 7 AM.", ru:"Разбудите меня в 7 утра, пожалуйста."},
+      {en:"Where is the restaurant?", ru:"Где ресторан?"},
+      {en:"Is breakfast included?", ru:"Включён ли завтрак?"},
+      {en:"What time is breakfast?", ru:"Во сколько завтрак?"},
+      {en:"Is there a restaurant in the hotel?", ru:"Есть ли в отеле ресторан?"},
+      {en:"Could I have my bill, please?", ru:"Можно мне счёт, пожалуйста?"},
+      {en:"Can I pay by credit card?", ru:"Могу я заплатить кредитной картой?"},
+      {en:"I think there's a mistake on the bill.", ru:"Кажется, в счёте ошибка."},
+      {en:"I'd like to store my luggage.", ru:"Я хотел бы оставить багаж на хранение."},
+      {en:"Where is the gym?", ru:"Где спортзал?"},
+      {en:"Where is the swimming pool?", ru:"Где бассейн?"},
+      {en:"Do you have room service?", ru:"У вас есть обслуживание в номерах?"},
+      {en:"Is there a laundry service?", ru:"Есть ли прачечная?"},
+      {en:"Can you recommend a good restaurant nearby?", ru:"Не могли бы вы порекомендовать хороший ресторан поблизости?"},
+      {en:"Could I have a city map?", ru:"Можно мне карту города?"},
+      {en:"Is there a safe in the room?", ru:"Есть ли в номере сейф?"},
+    ]
+  },
+  {
+    id:"restaurant", icon:"🍽️", title:"Ресторан", subtitle:"Restaurants & Food", color:"#ff2d55",
+    phrases:[
+      {en:"A table for two, please.", ru:"Столик на двоих, пожалуйста."},
+      {en:"Do you have a reservation?", ru:"У вас есть бронь?"},
+      {en:"I have a reservation under the name...", ru:"У меня бронь на имя..."},
+      {en:"Could we have the menu, please?", ru:"Можно нам меню, пожалуйста?"},
+      {en:"Do you have an English menu?", ru:"У вас есть меню на английском?"},
+      {en:"What do you recommend?", ru:"Что вы рекомендуете?"},
+      {en:"What is the dish of the day?", ru:"Какое блюдо дня?"},
+      {en:"I'll have this, please.", ru:"Я возьму вот это, пожалуйста."},
+      {en:"I'd like to order, please.", ru:"Я хотел бы сделать заказ, пожалуйста."},
+      {en:"Does this contain nuts?", ru:"В этом блюде есть орехи?"},
+      {en:"Does this contain gluten?", ru:"В этом блюде есть глютен?"},
+      {en:"Is this dish spicy?", ru:"Это блюдо острое?"},
+      {en:"Could you make it less spicy?", ru:"Не могли бы вы сделать его менее острым?"},
+      {en:"Could I have it without onions?", ru:"Можно без лука?"},
+      {en:"This is not what I ordered.", ru:"Это не то, что я заказал/заказала."},
+      {en:"The food is cold.", ru:"Еда холодная."},
+      {en:"This is delicious!", ru:"Это очень вкусно!"},
+      {en:"Could I have some more bread?", ru:"Можно ещё хлеба?"},
+      {en:"Could we have some water?", ru:"Можно нам воды?"},
+      {en:"Still or sparkling water?", ru:"Обычную или газированную воду?"},
+      {en:"Could I have the bill, please?", ru:"Можно счёт, пожалуйста?"},
+      {en:"Is service included?", ru:"Обслуживание включено?"},
+      {en:"We'd like to pay separately.", ru:"Мы хотели бы заплатить отдельно."},
+      {en:"Do you accept credit cards?", ru:"Вы принимаете кредитные карты?"},
+      {en:"Keep the change.", ru:"Сдачи не нужно."},
+      {en:"Could I get a takeaway box?", ru:"Можно мне коробку с собой?"},
+    ]
+  },
+  {
+    id:"shopping", icon:"🛍️", title:"Шоппинг", subtitle:"Shopping & Payments", color:"#af52de",
+    phrases:[
+      {en:"How much does this cost?", ru:"Сколько это стоит?"},
+      {en:"Do you have this in a different size?", ru:"Есть ли это в другом размере?"},
+      {en:"Do you have this in a different colour?", ru:"Есть ли это в другом цвете?"},
+      {en:"Where is the fitting room?", ru:"Где примерочная?"},
+      {en:"It doesn't fit.", ru:"Это не подходит по размеру."},
+      {en:"It's too big.", ru:"Это слишком большое."},
+      {en:"It's too small.", ru:"Это слишком маленькое."},
+      {en:"I'm just looking, thank you.", ru:"Я просто смотрю, спасибо."},
+      {en:"Do you accept credit cards?", ru:"Вы принимаете кредитные карты?"},
+      {en:"Do you have a bag?", ru:"У вас есть пакет?"},
+      {en:"Can I get a receipt?", ru:"Можно мне чек?"},
+      {en:"I'd like to return this.", ru:"Я хотел бы вернуть это."},
+      {en:"Is there a discount?", ru:"Есть скидка?"},
+      {en:"Do you have a loyalty card?", ru:"У вас есть карта лояльности?"},
+      {en:"Is VAT included?", ru:"НДС включён?"},
+      {en:"Can I get a tax refund?", ru:"Могу я получить возврат налога?"},
+      {en:"Do you have duty-free items?", ru:"У вас есть товары duty-free?"},
+      {en:"Where is the pharmacy?", ru:"Где аптека?"},
+      {en:"Where is the supermarket?", ru:"Где супермаркет?"},
+    ]
+  },
+  {
+    id:"emergency", icon:"🆘", title:"Экстренные", subtitle:"Emergency", color:"#ff3b30",
+    phrases:[
+      {en:"Help!", ru:"Помогите!"},
+      {en:"Call the police!", ru:"Вызовите полицию!"},
+      {en:"Call an ambulance!", ru:"Вызовите скорую помощь!"},
+      {en:"Call the fire brigade!", ru:"Вызовите пожарных!"},
+      {en:"I need a doctor.", ru:"Мне нужен врач."},
+      {en:"I've been robbed.", ru:"Меня ограбили."},
+      {en:"My passport has been stolen.", ru:"У меня украли паспорт."},
+      {en:"I've lost my wallet.", ru:"Я потерял/потеряла кошелёк."},
+      {en:"I've lost my phone.", ru:"Я потерял/потеряла телефон."},
+      {en:"I'm not feeling well.", ru:"Мне плохо."},
+      {en:"I have a fever.", ru:"У меня жар."},
+      {en:"I have a headache.", ru:"У меня болит голова."},
+      {en:"I have chest pain.", ru:"У меня боль в груди."},
+      {en:"I need medicine.", ru:"Мне нужно лекарство."},
+      {en:"Where is the nearest hospital?", ru:"Где ближайшая больница?"},
+      {en:"Where is the nearest pharmacy?", ru:"Где ближайшая аптека?"},
+      {en:"I have travel insurance.", ru:"У меня есть туристическая страховка."},
+      {en:"My insurance number is...", ru:"Номер моей страховки..."},
+      {en:"I've missed my flight.", ru:"Я опоздал/опоздала на рейс."},
+      {en:"I need to contact my embassy.", ru:"Мне нужно связаться с посольством."},
+      {en:"I am allergic to...", ru:"У меня аллергия на..."},
+      {en:"I am diabetic.", ru:"Я диабетик."},
+      {en:"I take this medication regularly.", ru:"Я регулярно принимаю это лекарство."},
+      {en:"I need an interpreter.", ru:"Мне нужен переводчик."},
+      {en:"Please write it down.", ru:"Пожалуйста, запишите это."},
+    ]
+  },
+  {
+    id:"general", icon:"💬", title:"Основные", subtitle:"General Phrases", color:"#636366",
+    phrases:[
+      {en:"Hello!", ru:"Здравствуйте! / Привет!"},
+      {en:"Good morning.", ru:"Доброе утро."},
+      {en:"Good afternoon.", ru:"Добрый день."},
+      {en:"Good evening.", ru:"Добрый вечер."},
+      {en:"Good night.", ru:"Спокойной ночи."},
+      {en:"Goodbye.", ru:"До свидания."},
+      {en:"See you later.", ru:"До скорого."},
+      {en:"Thank you.", ru:"Спасибо."},
+      {en:"Thank you very much.", ru:"Большое спасибо."},
+      {en:"You're welcome.", ru:"Пожалуйста."},
+      {en:"Excuse me.", ru:"Простите / Извините."},
+      {en:"I'm sorry.", ru:"Мне жаль."},
+      {en:"Please.", ru:"Пожалуйста."},
+      {en:"Yes.", ru:"Да."},
+      {en:"No.", ru:"Нет."},
+      {en:"Maybe.", ru:"Возможно."},
+      {en:"I don't understand.", ru:"Я не понимаю."},
+      {en:"Could you speak more slowly?", ru:"Не могли бы вы говорить медленнее?"},
+      {en:"Could you repeat that?", ru:"Не могли бы вы повторить?"},
+      {en:"Could you write that down?", ru:"Не могли бы вы это записать?"},
+      {en:"Do you speak Russian?", ru:"Вы говорите по-русски?"},
+      {en:"I don't speak English well.", ru:"Я плохо говорю по-английски."},
+      {en:"Where is...?", ru:"Где находится...?"},
+      {en:"How much does this cost?", ru:"Сколько это стоит?"},
+      {en:"Can you help me?", ru:"Не могли бы вы мне помочь?"},
+      {en:"I'm lost.", ru:"Я заблудился/заблудилась."},
+      {en:"Can I take a photo here?", ru:"Можно ли здесь фотографировать?"},
+      {en:"Is it free?", ru:"Это бесплатно?"},
+      {en:"What time is it?", ru:"Который час?"},
+      {en:"What day is it today?", ru:"Какой сегодня день?"},
+    ]
+  }
+]};
+
+/* ════════════════════════════════════════════════
+   DATA — GUIDES
+════════════════════════════════════════════════ */
+const GUIDES_DATA = { guides: [
+  {
+    id:"checkin", icon:"🎫", title:"Регистрация на рейс", subtitle:"Check-in Process", color:"#0071e3",
+    steps:[
+      {title:"Онлайн-регистрация", content:"Зарегистрируйтесь онлайн за 24–48 часов до вылета. Скачайте посадочный талон на телефон или распечатайте. Это сэкономит время в аэропорту и позволит заранее выбрать место.", tip:"Online check-in is usually available 24–48 hours before departure"},
+      {title:"Приезд в аэропорт", content:"Приезжайте минимум за 2 часа до вылета на внутренних рейсах и за 3 часа — на международных. Найдите стойку регистрации вашей авиакомпании по электронному табло вылетов.", tip:"Arrive at least 2 hours early for domestic, 3 hours for international flights"},
+      {title:"Сдача багажа", content:"Взвесьте чемодан дома. Если вес превышен, доплатите онлайн — это дешевле, чем в аэропорту. Прикрепите бирку с именем и контактами к каждой сумке. Запрещённые предметы (литий-аккумуляторы >100Вт·ч) — только в ручной клади.", tip:"Pre-pay for extra baggage online — it's always cheaper than at the airport"},
+      {title:"Досмотр безопасности", content:"Снимите ремень, часы, куртку. Ноутбук и планшет достаньте из сумки и положите в отдельный лоток. Жидкости до 100 мл — в прозрачный пакет с зип-застёжкой. Металлические предметы — в лоток или в сумку.", tip:"Liquids must be under 100ml each and fit in one clear 1-litre bag"},
+      {title:"Паспортный контроль", content:"Приготовьте паспорт и посадочный талон. Отвечайте на вопросы чётко и уверенно. Никогда не шутите о безопасности или оружии — это серьёзное нарушение с тяжёлыми последствиями.", tip:"Never joke about bombs, weapons or security — it's a criminal offence"},
+      {title:"Выход на посадку", content:"Ищите номер выхода (gate) на посадочном талоне. Приходите к выходу минимум за 30–40 минут до вылета. Выходы могут меняться — постоянно проверяйте электронные табло.", tip:"Gates can change last-minute — always check the departure boards"},
+      {title:"Посадка в самолёт", content:"Посадка идёт группами — смотрите свой номер группы на посадочном талоне. Во время посадки держите паспорт и талон наготове. Быстро займите место и уберите ручную кладь в верхний отсек.", tip:"Board with your group — early boarding is available with some tickets"},
+    ]
+  },
+  {
+    id:"customs", icon:"🛃", title:"Таможня и пограничный контроль", subtitle:"Customs & Immigration", color:"#5856d6",
+    steps:[
+      {title:"Подготовка документов на борту", content:"На длинных рейсах раздают таможенные декларации. Заполните их заранее. Укажите цель поездки, адрес проживания в стране, наличные свыше $10 000. Если не уверены — декларируйте.", tip:"When in doubt, declare — it's always safer than not declaring"},
+      {title:"Выбор очереди", content:"Встаньте в нужную очередь: для граждан страны (Citizens/Nationals) или для иностранцев (Foreigners/Visitors/All Passports). Ошибка с очередью замедлит процесс.", tip:"'All Passports' queues are for everyone — use them if unsure"},
+      {title:"Разговор с офицером пограничного контроля", content:"Подойдите один. Отдайте паспорт. Отвечайте кратко: цель — tourism/business/transit; жильё — Hotel Hilton; срок — one week. Смотрите в камеру для биометрии. Не нервничайте — это стандартная процедура.", tip:"Answer concisely: purpose, accommodation, length of stay"},
+      {title:"Зелёный / Красный коридор", content:"Зелёный коридор (Nothing to Declare) — если не везёте запрещённого или сверхлимитного. Красный (Goods to Declare) — если везёте товары для декларирования. Неправильный выбор — это нарушение закона.", tip:"Green = nothing to declare · Red = items to declare"},
+      {title:"Таможенный досмотр", content:"Таможенники могут выборочно попросить открыть чемодан. Не спорьте. Если везёте лекарства по рецепту — держите рецепт при себе с переводом или на латыни. Ценности и большие суммы наличных — декларируйте.", tip:"Keep prescription medications with labels and doctor's prescriptions"},
+      {title:"Запрещённые товары", content:"Нельзя ввозить: свежие продукты и мясо (в большинстве стран), наркотики, оружие, ITES (товары под санкциями). В некоторых странах запрещены: жвачка (Сингапур), э-сигареты, определённые лекарства. Проверяйте заранее.", tip:"Always research import restrictions for your destination country"},
+    ]
+  },
+  {
+    id:"plane_behavior", icon:"🛩️", title:"Поведение на борту", subtitle:"On the Plane", color:"#ff9500",
+    steps:[
+      {title:"Посадка и размещение", content:"Найдите место быстро, не задерживая очередь. Ручную кладь — строго в отсек над своим местом. Личные вещи под сиденье впереди. Не занимайте чужой отсек — это серьёзный источник конфликтов.", tip:"Store your carry-on above your own seat, not blocks away"},
+      {title:"Режим полёта и устройства", content:"Переведите телефон в авиарежим до закрытия дверей — не только перед взлётом. Ноутбук и планшет можно использовать после набора высоты. Bluetooth-наушники разрешены на большинстве рейсов.", tip:"Switch to airplane mode before doors close, not just at takeoff"},
+      {title:"Безопасность", content:"Внимательно слушайте инструктаж — даже если летаете часто. Запомните расположение ближайшего аварийного выхода (он может быть сзади). Держите ремень пристёгнутым всё время, когда сидите — турбулентность бывает внезапно.", tip:"The nearest exit may be behind you — count the rows"},
+      {title:"Этикет и уважение к соседям", content:"Не откидывайте спинку во время еды соседа сзади. Спросите разрешения. Не ставьте ноги на подлокотник или сиденье. Не включайте видео без наушников. Говорите тихо ночью. Средний подлокотник — для среднего пассажира.", tip:"Ask before reclining — especially during meal service"},
+      {title:"Питание и напитки на борту", content:"Стюард принесёт напитки и еду. Можно всегда попросить воду. Алкоголь на высоте действует сильнее — пейте умеренно. Убирайте столик и все предметы перед посадкой.", tip:"Alcohol affects you more at altitude — drink in moderation"},
+      {title:"Здоровье в длинном перелёте", content:"Вставайте каждые 1–2 часа и делайте несколько шагов — профилактика тромбоза. Пейте 200–250 мл воды каждый час. Избегайте кофеина. Возьмите беруши, маску для сна, компрессионные носки и увлажняющий крем.", tip:"Drink water every hour and walk every 1–2 hours to prevent DVT"},
+      {title:"Посадка и выход", content:"Во время снижения жуйте жвачку или зевайте — это выравнивает давление в ушах. Не вставайте сразу при остановке — ждите своей очереди. Проверьте карманы и кресло перед выходом. Готовьте паспорт заранее.", tip:"Chew gum or yawn during descent to equalise ear pressure"},
+    ]
+  },
+  {
+    id:"hotel_tips", icon:"🏨", title:"Заезд и жизнь в отеле", subtitle:"Hotel Tips", color:"#34c759",
+    steps:[
+      {title:"Бронирование и заезд", content:"Стандартное время заезда — 14:00–15:00. Если приехали раньше — попросите ранний заезд (early check-in). Могут доплату взять или нет — зависит от загрузки отеля. Попросите карту отеля и схему питания.", tip:"Ask for early check-in — hotels often accommodate at no charge"},
+      {title:"Осмотр номера при заезде", content:"Сразу осмотрите номер: работа техники, чистота, запах, шум. Если что-то не так — сразу сообщите на ресепшн. Вас переселят или устранят проблему. Не ждите до выезда — потом сложнее доказать.", tip:"Report room issues immediately — before settling in"},
+      {title:"Безопасность", content:"Не открывайте дверь незнакомцам — звоните на ресепшн для проверки. Используйте внутренний засов и цепочку. Храните паспорт, карты и крупные суммы в сейфе. Запомните номер пожарного выхода — он обычно указан на двери.", tip:"Use the in-room safe for passport, cards and large amounts of cash"},
+      {title:"Сервис и уборка", content:"Знак Do Not Disturb — вешайте на дверь, когда не нужна уборка. Make Up Room — когда нужна. Горничная приходит раз в день, обычно утром. Чаевые оставляйте каждый день — $1–3 с запиской «For Housekeeping».", tip:"Tip housekeeping daily — $1–3 with a note, as staff can change"},
+      {title:"Питание и мини-бар", content:"Уточните время завтрака при заезде. Не трогайте мини-бар без намерения платить — автоматические датчики могут списать деньги за перестановку предметов в некоторых отелях. При заказе в ресторане уточните — включено в пакет или отдельно.", tip:"Some mini-bar sensors charge just for moving items — be careful"},
+      {title:"Выезд (Check-out)", content:"Стандартное время выезда — 11:00–12:00. Опоздание может стоить доплаты за лишний час или даже сутки. Попросите детальный счёт (itemized bill) и проверьте каждую позицию. Сдайте все ключ-карты.", tip:"Request an itemized bill and check every charge carefully"},
+    ]
+  },
+  {
+    id:"transfer_tips", icon:"🚕", title:"Трансфер и такси", subtitle:"Getting Around", color:"#ff3b30",
+    steps:[
+      {title:"Официальное такси vs нелегалы", content:"Берите только официальные такси на стоянках у выхода (есть знак Taxi). Избегайте людей, предлагающих такси внутри терминала — это часто мошенники. Используйте приложения: Uber, Bolt, Grab, Yandex — в зависимости от страны.", tip:"Only use official taxi ranks or ride-hailing apps like Uber or Bolt"},
+      {title:"Предзаказ трансфера", content:"Лучший вариант — заказать трансфер заранее через отель или сервис (Kiwitaxi, Welcome Pickups и др.). Водитель встретит с табличкой. Уточните итоговую стоимость ДО поездки и метод оплаты.", tip:"Pre-book transfers online — cheaper and stress-free on arrival"},
+      {title:"В такси", content:"Перед посадкой убедитесь, что счётчик включён или цена оговорена. Покажите адрес на телефоне — избегает недопонимания. Не кладите ценности в багажник без необходимости. Сфотографируйте номер такси на всякий случай.", tip:"Show your destination address on your phone screen to avoid confusion"},
+      {title:"Аэроэкспресс и поезда", content:"Во многих городах аэропорт связан с центром экспресс-поездом. Это самый быстрый и предсказуемый вариант. В Лондоне — Heathrow Express, в Токио — Narita Express, в Стокгольме — Arlanda Express.", tip:"Airport express trains are usually fastest — research before you fly"},
+      {title:"Общественный транспорт", content:"Автобусы до аэропорта — самый дешёвый вариант, но медленнее. Купите проездную карту (Oyster в Лондоне, Navigo в Париже, Octopus в Гонконге) — это выгоднее разовых билетов.", tip:"City transport cards are cheaper than buying individual tickets"},
+      {title:"Навигация офлайн", content:"Скачайте Maps.me или Google Maps офлайн-карты ДО поездки. Они работают без интернета. Включите геолокацию — телефон будет видеть ваше положение даже без sim-карты. Полезно для пешей навигации в незнакомом городе.", tip:"Download offline maps before you travel — they work without data"},
+    ]
+  },
+  {
+    id:"delays", icon:"⏳", title:"Задержки и отмены рейсов", subtitle:"Delays & Cancellations", color:"#af52de",
+    steps:[
+      {title:"Задержка рейса: ваши права", content:"При задержке от 2 часов авиакомпания обязана предоставить питание и прохладительные напитки. От 5 часов — возврат полной стоимости билета или альтернативный рейс. Это требование EU261 действует на рейсы из стран ЕС и прилёты в ЕС.", tip:"EU Regulation 261/2004 gives you rights for delays over 2 hours"},
+      {title:"Отмена рейса", content:"Авиакомпания обязана предложить полный возврат или перебронирование. При отмене не по форс-мажору (погода, забастовка) — дополнительная компенсация €250–600 в зависимости от дальности рейса (в ЕС).", tip:"Ask for 'EU261 compensation' explicitly — airlines don't volunteer it"},
+      {title:"Стыковочный рейс", content:"Если вы опаздываете на стыковку по вине авиакомпании — немедленно подойдите к сотрудникам у выхода или к стойке. Они обязаны пересадить вас на следующий рейс без доплаты. Не уходите без подтверждения.", tip:"Go to the gate agent immediately — don't wait at baggage claim"},
+      {title:"Овербукинг (Denied Boarding)", content:"Если вас не пустили на рейс из-за перепроданных мест — вы имеете право на компенсацию €250–600 (ЕС) плюс альтернативный рейс или полный возврат. Не уходите без письменного подтверждения отказа в посадке (Denied Boarding Certificate).", tip:"Always get a written Denied Boarding Certificate before leaving"},
+      {title:"Долгое ожидание в аэропорту", content:"При задержке более 3–5 часов авиакомпания обязана предоставить ваучер на питание. При задержке до следующего дня — гостиницу и транспорт до неё. Собирайте ВСЕ квитанции за расходы во время задержки.", tip:"Save every receipt — food, taxi, hotel — you can claim them back"},
+      {title:"Как получить компенсацию", content:"Обратитесь в авиакомпанию письменно в течение 6 лет (в ЕС). Если отказывают — используйте сервисы AirHelp или Flightright, которые действуют за процент от компенсации. Пишите на email Customer Relations, а не в общий чат поддержки.", tip:"Use AirHelp or Flightright if the airline refuses — they work on commission"},
+    ]
+  },
+  {
+    id:"packing", icon:"🧳", title:"Сборка чемодана", subtitle:"Packing Smart", color:"#ff9500",
+    steps:[
+      {title:"Ручная кладь: что можно и нельзя", content:"Жидкости — до 100 мл в прозрачном пакете 1 л. Нельзя: острые предметы, зажигалки (в большинстве стран), аэрозоли больше 100 мл, литий-аккумуляторы >100Вт·ч в трюме. Power bank — только в ручную кладь.", tip:"Power banks must go in carry-on — never in checked baggage"},
+      {title:"Размеры ручной клади", content:"Стандарт у большинства авиакомпаний: 55×40×20 см, вес до 10 кг. Лоукосты (Ryanair, Wizz Air) — строже: 40×20×25 см. Всегда проверяйте правила конкретной авиакомпании перед вылетом.", tip:"Always check baggage rules — low-cost carriers have stricter limits"},
+      {title:"Документы и ценности", content:"Паспорт, страховой полис, копии документов — в нагрудный карман или специальный чехол. Никогда не кладите паспорт в чемодан. Деньги разделите: часть в кошельке, часть — в другом месте.", tip:"Keep passport in your carry-on — never in checked luggage"},
+      {title:"Одежда: упаковка и выбор", content:"Скатывайте вещи рулетом — занимает меньше места. Соблюдайте принцип капсульного гардероба: базовые нейтральные вещи, которые сочетаются между собой. Тяжёлые вещи (ботинки, джинсы) наденьте на себя в день вылета.", tip:"Roll clothes instead of folding — saves up to 30% space"},
+      {title:"Аптечка путешественника", content:"Обязательно: обезболивающее, антигистамин, средство от диареи, пластыри, антисептик, солнцезащитный крем. Если принимаете рецептурные препараты — возьмите с запасом и с рецептом.", tip:"Pack a small first-aid kit — especially for destinations with limited pharmacies"},
+      {title:"Электроника и адаптеры", content:"Проверьте форму розеток в стране назначения (EU, UK, US, AU). Универсальный адаптер решает проблему везде. Зарядники и кабели положите в ручную кладь. Для длинных перелётов — портативный аккумулятор 10 000–20 000 мАч.", tip:"Buy a universal travel adapter — worth every cent"},
+    ]
+  },
+  {
+    id:"money", icon:"💳", title:"Деньги и оплата за рубежом", subtitle:"Money & Payments", color:"#34c759",
+    steps:[
+      {title:"Карты за рубежом", content:"Visa и Mastercard принимают в большинстве стран. Перед поездкой уведомите банк о выезде или активируйте опцию зарубежных транзакций. Карты с нулевой конвертацией (Revolut, Wise, Tinkoff Black) позволяют избежать комиссий.", tip:"Notify your bank before travelling to avoid card blocks"},
+      {title:"Наличные", content:"Берите наличные на случай мест без терминалов: рынки, маленькие кафе, транспорт. Снимайте в банкоматах банков (не обменниках у аэропорта) — курс лучше. Снимайте сразу большую сумму, чтобы меньше платить комиссий.", tip:"Use bank ATMs, not airport exchange kiosks — the rate is far better"},
+      {title:"Курс обмена", content:"Никогда не соглашайтесь на DCC (Dynamic Currency Conversion) — когда терминал предлагает заплатить в рублях вместо местной валюты. Всегда выбирайте оплату в местной валюте. Курс DCC хуже на 3–8%.", tip:"Always pay in local currency — never accept DCC conversion"},
+      {title:"Чаевые (Tips)", content:"США, Канада: 15–20% обязательно. Великобритания: 10–12% в ресторанах. Европа: 5–10% или округлить счёт. Азия (Япония, Южная Корея): чаевые не приняты и могут обидеть. Уточняйте традиции страны заранее.", tip:"In Japan and South Korea, tipping is considered rude — don't do it"},
+      {title:"Интернет-банкинг и безопасность", content:"Не используйте публичный Wi-Fi для банковских операций. Включите уведомления по каждой транзакции. Заблокируйте карту мгновенно через приложение при утере. Имейте контакт банка для экстренной связи.", tip:"Enable transaction notifications and instant card block in your banking app"},
+    ]
+  },
+]};
+
+/* ════════════════════════════════════════════════
+   APP LOGIC
+════════════════════════════════════════════════ */
+let activeCat = 'all';
+let searchQuery = '';
+let favorites = new Set(JSON.parse(localStorage.getItem('favs') || '[]'));
+let isDark = localStorage.getItem('theme') === 'dark' ||
+  (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+/* — Theme — */
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('theme-btn').textContent = isDark ? '☀️' : '🌙';
+}
+document.getElementById('theme-btn').addEventListener('click', ()=>{
+  isDark = !isDark;
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  applyTheme();
+});
+applyTheme();
+
+/* — Navigation — */
+function showPage(pageId){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === pageId));
+  window.scrollTo(0,0);
+  if(pageId === 'page-favorites') renderFavorites();
+}
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => { if(btn.dataset.page) showPage(btn.dataset.page); });
+});
+
+/* — Pills (wrapped) — */
+function buildPills(){
+  const container = document.getElementById('cat-pills');
+  PHRASES_DATA.categories.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-pill';
+    btn.dataset.cat = cat.id;
+    btn.textContent = cat.icon + ' ' + cat.title;
+    btn.addEventListener('click', () => {
+      activeCat = cat.id;
+      document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      renderPhrases();
+    });
+    container.appendChild(btn);
+  });
+  container.querySelector('[data-cat="all"]').addEventListener('click', () => {
+    activeCat = 'all';
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    container.querySelector('[data-cat="all"]').classList.add('active');
+    renderPhrases();
+  });
+}
+
+/* — Helpers — */
+function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function highlight(t, q){
+  if(!q) return esc(t);
+  const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')','gi');
+  return esc(t).replace(re,'<mark>$1</mark>');
+}
+
+/* — Render phrases — */
+function renderPhrases(){
+  const container = document.getElementById('phrases-list');
+  container.innerHTML = '';
+  const q = searchQuery.toLowerCase();
+  const cats = activeCat === 'all'
+    ? PHRASES_DATA.categories
+    : PHRASES_DATA.categories.filter(c => c.id === activeCat);
+  let total = 0;
+
+  cats.forEach(cat => {
+    const filtered = cat.phrases.filter(p =>
+      !q || p.en.toLowerCase().includes(q) || p.ru.toLowerCase().includes(q)
+    );
+    if(!filtered.length) return;
+    total += filtered.length;
+
+    if(activeCat === 'all'){
+      const gt = document.createElement('div');
+      gt.className = 'phrase-group-title';
+      gt.textContent = cat.icon + ' ' + cat.title;
+      container.appendChild(gt);
+    }
+
+    filtered.forEach((phrase, i) => {
+      const key = cat.id + '_' + i;
+      const isFav = favorites.has(key);
+      const card = document.createElement('div');
+      card.className = 'phrase-card';
+      card.innerHTML = `
+        <div class="phrase-en">${highlight(phrase.en, searchQuery)}</div>
+        <div class="phrase-ru">${highlight(phrase.ru, searchQuery)}</div>
+        <button class="star-btn${isFav ? ' active' : ''}" data-key="${key}" aria-label="Избранное">★</button>
+      `;
+      card.querySelector('.star-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        toggleFav(key, e.currentTarget);
+      });
+      card.addEventListener('click', () => copyPhrase(phrase.en));
+      container.appendChild(card);
+    });
+  });
+
+  if(total === 0){
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Ничего не найдено</div><div class="empty-text">Попробуйте другой запрос</div></div>`;
+  }
+}
+
+/* — Favorites — */
+function toggleFav(key, btn){
+  if(favorites.has(key)){
+    favorites.delete(key);
+    btn.classList.remove('active');
+  } else {
+    favorites.add(key);
+    btn.classList.add('active');
+    btn.style.transform = 'translateY(-50%) scale(1.5)';
+    setTimeout(() => btn.style.transform = '', 250);
+  }
+  localStorage.setItem('favs', JSON.stringify([...favorites]));
+}
+
+function renderFavorites(){
+  const container = document.getElementById('favorites-list');
+  container.innerHTML = '';
+  if(favorites.size === 0){
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">⭐</div><div class="empty-title">Нет избранных фраз</div><div class="empty-text">Нажмите ★ у фразы, чтобы добавить её сюда</div></div>`;
+    return;
+  }
+  favorites.forEach(key => {
+    const [catId, idxStr] = key.split('_');
+    const cat = PHRASES_DATA.categories.find(c => c.id === catId);
+    if(!cat || !cat.phrases[+idxStr]) return;
+    const phrase = cat.phrases[+idxStr];
+    const card = document.createElement('div');
+    card.className = 'phrase-card';
+    card.innerHTML = `
+      <div class="phrase-en">${esc(phrase.en)}</div>
+      <div class="phrase-ru">${esc(phrase.ru)}</div>
+      <button class="star-btn active" data-key="${key}" aria-label="Удалить из избранного">★</button>
+    `;
+    card.querySelector('.star-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      toggleFav(key, e.currentTarget);
+      setTimeout(() => renderFavorites(), 280);
+    });
+    card.addEventListener('click', () => copyPhrase(phrase.en));
+    container.appendChild(card);
+  });
+}
+
+/* — Copy — */
+function copyPhrase(text){
+  navigator.clipboard?.writeText(text).catch(()=>{});
+  const t = document.getElementById('copy-toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* — Search — */
+document.getElementById('phrase-search').addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  document.getElementById('search-clear').style.display = searchQuery ? 'block' : 'none';
+  renderPhrases();
+});
+document.getElementById('search-clear').addEventListener('click', () => {
+  document.getElementById('phrase-search').value = '';
+  searchQuery = '';
+  document.getElementById('search-clear').style.display = 'none';
+  renderPhrases();
+});
+
+/* — Guides — */
+function renderGuides(){
+  const container = document.getElementById('guides-list');
+  GUIDES_DATA.guides.forEach(guide => {
+    const card = document.createElement('div');
+    card.className = 'guide-card';
+    card.innerHTML = `
+      <div class="guide-card-icon" style="background:${guide.color}1a">${guide.icon}</div>
+      <div class="guide-card-body">
+        <div class="guide-card-title">${esc(guide.title)}</div>
+        <div class="guide-card-sub">${esc(guide.subtitle)}</div>
+        <div class="guide-card-count">${guide.steps.length} шагов</div>
+      </div>
+      <span class="guide-chevron">›</span>
+    `;
+    card.addEventListener('click', () => openGuide(guide));
+    container.appendChild(card);
+  });
+}
+
+function openGuide(guide){
+  const content = document.getElementById('guide-detail-content');
+  content.innerHTML = `
+    <div class="guide-hero">
+      <div class="guide-hero-icon" style="background:${guide.color}1a">${guide.icon}</div>
+      <div class="tag" style="background:${guide.color}1a;color:${guide.color}">${esc(guide.subtitle)}</div>
+      <div class="guide-hero-title">${esc(guide.title)}</div>
+    </div>
+    <div class="divider"></div>
+    <div class="steps-list" id="steps-content"></div>
+  `;
+  const stepsEl = content.querySelector('#steps-content');
+  guide.steps.forEach((step, i) => {
+    const s = document.createElement('div');
+    s.className = 'step-item';
+    s.innerHTML = `
+      <div class="step-left">
+        <div class="step-num" style="background:${guide.color}">${i+1}</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">${esc(step.title)}</div>
+        <div class="step-content">${esc(step.content)}</div>
+        ${step.tip ? `<div class="step-tip"><span class="step-tip-icon">💡</span><span class="step-tip-text">${esc(step.tip)}</span></div>` : ''}
+      </div>
+    `;
+    stepsEl.appendChild(s);
+  });
+  showPage('page-guide-detail');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-page="page-guides"]').classList.add('active');
+}
+
+document.getElementById('guide-back-btn').addEventListener('click', () => showPage('page-guides'));
+
+/* — Offline — */
+function checkOnline(){ document.body.classList.toggle('is-offline', !navigator.onLine); }
+window.addEventListener('online', checkOnline);
+window.addEventListener('offline', checkOnline);
+checkOnline();
+
+/* — Service Worker — */
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+/* — Init — */
+buildPills();
+renderPhrases();
+renderGuides();
+</script>
+</body>
+</html>

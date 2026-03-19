@@ -1,5 +1,5 @@
 /* Travel Guide — Service Worker v3 */
-const CACHE = 'tg-v3';
+const CACHE = 'tg-v6';
 const URLS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
